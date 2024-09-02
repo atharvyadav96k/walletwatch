@@ -1,27 +1,29 @@
 import React from 'react';
 import axios from 'axios'
 export default function Register() {
-    // const Register = (e)=>{
-    //     e.preventDefault();
-    //     const username = e.target.username.value;
-    //     const email = e.target.email.value;
-    //     const password = e.target.password.value;
-    //     const data = {
-    //         username: username,
-    //         password: password,
-    //         email : email
-    //     }
-    //     axios.post('https://walletwatch-server.vercel.app/api/users/register', data)
-    //       .then(response => {
-    //         console.log('Response:', response.data);
-    //       })
-    //       .catch(error => {
-    //         console.error('Error:', error.response ? error.response.data : error.message); // Log any error
-    //     });
-    // }
+    const RegisterUser = (e) => {
+        e.preventDefault();
+        const username = e.target.username.value;
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+        const data = {
+            username: username,
+            password: password,
+            email: email
+        };
+    
+        axios.post('https://walletwatch-server.vercel.app/api/users/register', data)
+        .then(response => {
+          console.log('Response:', response.data);
+        })
+        .catch(error => {
+          console.error('Error:', error.response ? error.response.data : error.message);
+      });
+    }
+    
     return (
         <div className="container">
-            <form method='post' action='https://walletwatch-server.vercel.app/api/users/register'>
+            <form method='post' onSubmit={RegisterUser} action='https://walletwatch-server.vercel.app/api/users/register'>
                 <div className="mb-3">
                     <label htmlFor="exampleInputEmail1" className="form-label">
                         username
