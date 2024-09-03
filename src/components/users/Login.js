@@ -1,19 +1,17 @@
-import React from 'react';
-import axios from 'axios'
+import React from 'react'
 import '../../App.css'
-export default function Register() {
-    const RegisterUser = (e) => {
+import axios from 'axios';
+export default function Login() {
+    const LoginUser = (e) => {
         e.preventDefault();
-        const username = e.target.username.value;
-        const email = e.target.email.value;
+        const username = e.target.username.value;   
         const password = e.target.password.value;
         const data = {
             username: username,
-            password: password,
-            email: email
+            password: password
         };
 
-        axios.post('https://walletwatch-server.vercel.app/api/users/register', data)
+        axios.post('https://walletwatch-server.vercel.app/api/users/login', data)
             .then(response => {
                 console.log('Response:', response.data);
             })
@@ -28,20 +26,15 @@ export default function Register() {
                 <div className="shape"></div>
                 <div className="shape"></div>
             </div>
-            <form onSubmit={RegisterUser} method='post' action='https://walletwatch-server.vercel.app/api/users/register'>
-                <h3>Register Here</h3>
+            <form onSubmit={LoginUser} method='post' action='https://walletwatch-server.vercel.app/api/users/login'>
+                <h3>Login Here</h3>
 
                 <label for="username">Username</label>
                 <input type="text" placeholder="username" name="username" />
-
-                <label for="email">email</label>
-                <input type="email" placeholder="email" name="email" />
-
                 <label for="password">Password</label>
                 <input type="password" placeholder="password" name="password" />
 
                 <button>Log In</button>
-                <a href='/login'>Already have account</a>
             </form>
         </div>
     );
