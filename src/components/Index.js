@@ -3,7 +3,7 @@ import React from 'react'
 
 export default function Index() {
   const navigate = useNavigate();
-
+  
   return (
     <div>
       <button onClick={()=>{navigate('/login')}} style={{background: "white", width: "300px"}}>Login</button>
