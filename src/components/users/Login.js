@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import '../../App.css'; // Assuming you have your CSS file for custom styling
+import '../../App.css'; 
 
 export default function Login() {
     const [error, setError] = useState(null); // State to handle errors
@@ -33,17 +33,33 @@ export default function Login() {
                 <form onSubmit={LoginUser}>
                     <div className="mb-3">
                         <label htmlFor="username" className="form-label">Username</label>
-                        <input type="text" className="form-control" id="username" name="username" placeholder="Enter your username" required />
+                        <input
+                            type="text"
+                            className="form-control"
+                            id="username"
+                            name="username"
+                            placeholder="Enter your username"
+                            required
+                            autoComplete="username" // Added for better form experience
+                        />
                     </div>
                     <div className="mb-3">
                         <label htmlFor="password" className="form-label">Password</label>
-                        <input type="password" className="form-control" id="password" name="password" placeholder="Enter your password" required />
+                        <input
+                            type="password"
+                            className="form-control"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            required
+                            autoComplete="current-password" // Added for better form experience
+                        />
                     </div>
                     {error && <div className="alert alert-danger" role="alert">{error}</div>}
                     <button type="submit" className="btn btn-primary w-100">Log In</button>
                 </form>
                 <div className="mt-3 text-center">
-                    <a href="#" className="text-muted">Forgot Password?</a>
+                    <a href="#!" className="text-muted">Forgot Password?</a> {/* Changed href="#" to href="#!" to avoid potential warnings */}
                 </div>
             </div>
         </div>
