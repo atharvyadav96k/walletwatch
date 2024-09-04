@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
-export default function Main() {
+import { useParams } from 'react-router-dom';
+export default function Main(props) {
+    const {userid} = useParams();
+    console.log(props.params)
     const [categories, setCategories] = useState([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
     const [editingCategoryId, setEditingCategoryId] = useState(null);
     const [editingCategoryName, setEditingCategoryName] = useState(''); // Track editing category name
     const [spends, setSpends] = useState([]);
     const [showSpendForm, setShowSpendForm] = useState(false);
-    const userId = '66d57a6bd91ba70be15696ed';
+    // const userid = '66d57a6bd91ba70be15696ed';
     const url = 'https://walletwatch-server.vercel.app';
 
     const getCategories = () => {
-        axios.get(`${url}/api/users/categorys/${userId}`)
+        axios.get(`${url}/api/users/categorys/${userid}`)
             .then(response => {
                 console.log('Categories Response:', response.data.response);
                 setCategories(response.data.response || []);
@@ -42,7 +44,7 @@ export default function Main() {
             categoryName: categoryName,
             shareable: false
         };
-        axios.post(`${url}/api/users/categorys/create/${userId}`, data)
+        axios.post(`${url}/api/users/categorys/create/${userid}`, data)
             .then(response => {
                 console.log(response.data);
                 getCategories();
@@ -58,7 +60,7 @@ export default function Main() {
             categoryName: newName,
             categoryId: id
         };
-        axios.put(`${url}/api/users/categorys/edit/${userId}`, data)
+        axios.put(`${url}/api/users/categorys/edit/${userid}`, data)
             .then(response => {
                 console.log('Category updated:', response.data);
                 getCategories();
@@ -74,7 +76,7 @@ export default function Main() {
         const data = {
             data: { categoryId: id }
         };
-        axios.delete(`${url}/api/users/categorys/delete/${userId}`, data)
+        axios.delete(`${url}/api/users/categorys/delete/${userid}`, data)
             .then(response => {
                 getCategories();
                 setSelectedCategoryId(null);
@@ -117,6 +119,14 @@ export default function Main() {
             });
     };
 
+    const handelCategoryName = (name) =>{
+        if(name.length > 14){
+            return name.substring(0, 15) + "...";
+        }else{
+            return name;
+        }
+        
+    }
     useEffect(() => {
         getCategories();
     }, []);
@@ -124,7 +134,7 @@ export default function Main() {
     return (
         <div className='container mt-4'>
             <div className='row'>
-                <div className='col-md-3'>
+                <div className='col-md-4'>
                     <div className='card'>
                         <div className='card-body'>
                             <h5 className='card-title'>Categories</h5>
@@ -156,12 +166,12 @@ export default function Main() {
                                     ) : (
                                         <>
                                             <span onClick={() => handleCategoryClick(ele._id)} style={{ cursor: 'pointer' }}>
-                                                {ele.categoryName}
+                                                {handelCategoryName(ele.categoryName)}
                                             </span>
                                             <div>
                                                 <button className='btn btn-warning btn-sm me-2' onClick={() => {
                                                     setEditingCategoryId(ele._id);
-                                                    setEditingCategoryName(ele.categoryName); // Set initial value for input
+                                                    setEditingCategoryName(ele.categoryName); 
                                                 }}>
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-pencil" viewBox="0 0 16 16">
                                                         <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" />
@@ -180,7 +190,7 @@ export default function Main() {
                         </div>
                     </div>
                 </div>
-                <div className='col-md-9'>
+                <div className='col-md-8'>
                     <div className='card'>
                         <div className='card-body'>
                             {selectedCategoryId ? (

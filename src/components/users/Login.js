@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState} from 'react';
 import axios from 'axios';
 import '../../App.css'; 
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
+    const navigation = useNavigate();
     const [error, setError] = useState(null); // State to handle errors
 
     const LoginUser = (e) => {
@@ -16,9 +18,11 @@ export default function Login() {
 
         axios.post('https://walletwatch-server.vercel.app/api/users/login', data)
             .then(response => {
-                console.log('Response:', response.data);
-                setError(null); // Clear any previous errors
-                // Handle successful login here (e.g., redirect user, save token, etc.)
+                console.log('Response:', response.data.response);
+                setError(null); 
+                if(response.data.success == true){
+                    navigation(`/myspends/`+ response.data.response.userId)
+                }
             })
             .catch(error => {
                 console.error('Error:', error.response ? error.response.data : error.message);
