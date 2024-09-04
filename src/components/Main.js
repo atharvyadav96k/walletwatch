@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-
 export default function Main() {
     const { userid } = useParams();
     const [categories, setCategories] = useState([]);
@@ -12,74 +11,75 @@ export default function Main() {
     const [showSpendForm, setShowSpendForm] = useState(false);
     const url = 'https://walletwatch-server.vercel.app';
 
-    const getCategories = () => {
-        axios.get(`${url}/api/users/categorys/${userid}`)
-            .then(response => {
-                setCategories(response.data.response || []);
-            })
-            .catch(error => {
-                console.error('Error fetching categories:', error.response ? error.response.data : error.message);
-                setCategories([]);
-            });
-    };
+    // Memoize getCategories to prevent unnecessary re-creations
+    const getCategories = useCallback(async () => {
+        try {
+            const response = await axios.get(`${url}/api/users/categorys/${userid}`);
+            console.log('Categories Response:', response.data.response);
+            setCategories(response.data.response || []);
+        } catch (error) {
+            console.error('Error fetching categories:', error.response ? error.response.data : error.message);
+            setCategories([]);
+        }
+    }, [userid]); 
 
-    const getSpends = (categoryId) => {
-        axios.get(`${url}/api/users/categorys/spends/${categoryId}`)
-            .then(response => {
-                setSpends(Array.isArray(response.data.response.spendIds) ? response.data.response.spendIds : []);
-            })
-            .catch(error => {
-                console.error('Error fetching spends:', error.response ? error.response.data : error.message);
-                setSpends([]);
-            });
-    };
 
-    const categoryForm = (e) => {
+    const getSpends = useCallback(async (categoryId) => {
+        try {
+            const response = await axios.get(`${url}/api/users/categorys/spends/${categoryId}`);
+            console.log('Spends Response:', response.data.response.spendIds);
+            setSpends(Array.isArray(response.data.response.spendIds) ? response.data.response.spendIds : []);
+        } catch (error) {
+            console.error('Error fetching spends:', error.response ? error.response.data : error.message);
+            setSpends([]);
+        }
+    }, [url]);
+
+    const categoryForm = async (e) => {
         e.preventDefault();
         const categoryName = e.target.categoryName.value;
         const data = {
             categoryName: categoryName,
             shareable: false
         };
-        axios.post(`${url}/api/users/categorys/create/${userid}`, data)
-            .then(() => {
-                getCategories();
-                e.target.reset();
-            })
-            .catch(error => {
-                console.error('Error creating category:', error.response ? error.response.data : error.message);
-            });
+        try {
+            const response = await axios.post(`${url}/api/users/categorys/create/${userid}`, data);
+            console.log(response.data);
+            getCategories();
+            e.target.reset();
+        } catch (error) {
+            console.error('Error creating category:', error.response ? error.response.data : error.message);
+        }
     };
 
-    const editCategory = (id, newName) => {
+    const editCategory = async (id, newName) => {
         const data = {
             categoryName: newName,
             categoryId: id
         };
-        axios.put(`${url}/api/users/categorys/edit/${userid}`, data)
-            .then(() => {
-                getCategories();
-                setEditingCategoryId(null);
-                setEditingCategoryName('');
-            })
-            .catch(error => {
-                console.error('Error:', error.response ? error.response.data : error.message);
-            });
+        try {
+            const response = await axios.put(`${url}/api/users/categorys/edit/${userid}`, data);
+            console.log('Category updated:', response.data);
+            getCategories();
+            setEditingCategoryId(null);
+            setEditingCategoryName('');
+        } catch (error) {
+            console.error('Error:', error.response ? error.response.data : error.message);
+        }
     };
 
-    const deleteCategory = (id) => {
+    const deleteCategory = async (id) => {
         const data = {
             data: { categoryId: id }
         };
-        axios.delete(`${url}/api/users/categorys/delete/${userid}`, data)
-            .then(() => {
-                getCategories();
-                setSelectedCategoryId(null);
-                setSpends([]);
-            })
-            .catch(error => {
-                console.error('Error deleting category:', error.response ? error.response.data : error.message);
-            });
+        try {
+            await axios.delete(`${url}/api/users/categorys/delete/${userid}`, data);
+            getCategories();
+            setSelectedCategoryId(null);
+            setSpends([]);
+        } catch (error) {
+            console.error('Error deleting category:', error.response ? error.response.data : error.message);
+        }
     };
 
     const handleCategoryClick = (categoryId) => {
@@ -88,7 +88,7 @@ export default function Main() {
         setShowSpendForm(false);
     };
 
-    const spendFormSubmit = (e) => {
+    const spendFormSubmit = async (e) => {
         e.preventDefault();
         const title = e.target.title.value;
         const sharable = e.target.sharable.checked;
@@ -102,15 +102,15 @@ export default function Main() {
             amount: amount,
             paymentMethod: paymentMethod
         };
-        axios.post(`${url}/api/users/categorys/spends/create/${selectedCategoryId}`, data)
-            .then(() => {
-                getSpends(selectedCategoryId);
-                e.target.reset();
-                setShowSpendForm(false);
-            })
-            .catch(error => {
-                console.error('Error creating spend:', error.response ? error.response.data : error.message);
-            });
+        try {
+            await await axios.post(`${url}/api/users/categorys/spends/create/${selectedCategoryId}`, data);
+            // console.log('Spend Created:', response.data);
+            getSpends(selectedCategoryId);
+            e.target.reset();
+            setShowSpendForm(false);
+        } catch (error) {
+            console.error('Error creating spend:', error.response ? error.response.data : error.message);
+        }
     };
 
     const handelCategoryName = (name) => {
@@ -119,7 +119,7 @@ export default function Main() {
 
     useEffect(() => {
         getCategories();
-    }, []);
+    }, [getCategories]);
 
     return (
         <div className='container mt-4'>
@@ -169,7 +169,7 @@ export default function Main() {
                                                 </button>
                                                 <button onClick={() => deleteCategory(ele._id)} className='btn btn-danger btn-sm me-2'>
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-trash3" viewBox="0 0 16 16">
-                                                        <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-..853 10.64a1 1 0 0 1-1.003.86H4.885a1 1 0 0 1-1.003-.86L3.03 3.5H12.97z" />
+                                                        <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.998.92h-6.23a1 1 0 0 1-.998-.92L3.042 3.5H12.958zM5.5 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zm5 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5z" />
                                                     </svg>
                                                 </button>
                                             </div>
@@ -181,52 +181,62 @@ export default function Main() {
                     </div>
                 </div>
                 <div className='col-md-8'>
-                    {selectedCategoryId && (
-                        <div className='card'>
-                            <div className='card-body'>
-                                <h5 className='card-title'>Spends</h5>
-                                <ul className="list-group">
-                                    {spends.length === 0 && <li className="list-group-item">No spends found</li>}
-                                    {spends.map((spend) => (
-                                        <li key={spend._id} className="list-group-item">
-                                            {spend.title} - {spend.amount}
-                                        </li>
-                                    ))}
-                                </ul>
-                                <button className="btn btn-primary mt-3" onClick={() => setShowSpendForm(!showSpendForm)}>
-                                    {showSpendForm ? 'Cancel' : 'Add Spend'}
-                                </button>
-                                {showSpendForm && (
-                                    <form method='post' onSubmit={spendFormSubmit} className="mt-3">
-                                        <div className='mb-3'>
-                                            <input type='text' name='title' className='form-control' placeholder='Title' required />
-                                        </div>
-                                        <div className='mb-3'>
-                                            <textarea name='description' className='form-control' placeholder='Description' required></textarea>
-                                        </div>
-                                        <div className='mb-3'>
-                                            <input type='number' name='amount' className='form-control' placeholder='Amount' required />
-                                        </div>
-                                        <div className='mb-3'>
-                                            <select name='paymentMethod' className='form-control' required>
-                                                <option value=''>Payment Method</option>
-                                                <option value='cash'>Cash</option>
-                                                <option value='card'>Card</option>
-                                                <option value='online'>Online</option>
-                                            </select>
-                                        </div>
-                                        <div className="form-check mb-3">
-                                            <input className="form-check-input" type="checkbox" name="sharable" id="sharable" />
-                                            <label className="form-check-label" htmlFor="sharable">
-                                                Sharable
-                                            </label>
-                                        </div>
-                                        <button type='submit' className='btn btn-success'>Add Spend</button>
-                                    </form>
-                                )}
-                            </div>
+                    <div className='card'>
+                        <div className='card-body'>
+                            {selectedCategoryId ? (
+                                <div>
+                                    <h5>Spends for Selected Category</h5>
+                                    <button className='btn btn-success mb-3' onClick={() => setShowSpendForm(!showSpendForm)}>
+                                        {showSpendForm ? 'Cancel' : 'Add New Spend'}
+                                    </button>
+
+                                    {showSpendForm && (
+                                        <form onSubmit={spendFormSubmit} className="mb-3">
+                                            <div className="mb-3">
+                                                <label className="form-label">Title</label>
+                                                <input type='text' name='title' className='form-control' required />
+                                            </div>
+                                            <div className="mb-3">
+                                                <label className="form-label">Amount</label>
+                                                <input type='number' name='amount' className='form-control' required />
+                                            </div>
+                                            <div className="mb-3">
+                                                <label className="form-label">Description</label>
+                                                <input type='text' name='description' className='form-control' required />
+                                            </div>
+                                            <div className="mb-3">
+                                                <label className="form-label">Payment Method</label>
+                                                <select name='paymentMethod' className='form-select' required>
+                                                    <option value='online'>Online</option>
+                                                    <option value='offline'>Offline</option>
+                                                </select>
+                                            </div>
+                                            <div className="mb-3 form-check">
+                                                <input type='checkbox' className='form-check-input' name='sharable' />
+                                                <label className="form-check-label">Sharable</label>
+                                            </div>
+                                            <button type='submit' className='btn btn-primary'>Create Spend</button>
+                                        </form>
+                                    )}
+
+                                    {spends.length > 0 ? (
+                                        spends.map(spend => (
+                                            <div key={spend._id} className="border p-2 mb-2">
+                                                <p><strong>Title:</strong> {spend.title}</p>
+                                                <p><strong>Amount:</strong> {spend.amount}</p>
+                                                <p><strong>Description:</strong> {spend.description}</p>
+                                                <p><strong>Payment Method:</strong> {spend.paymentMethod}</p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p>No spends available for this category.</p>
+                                    )}
+                                </div>
+                            ) : (
+                                <p>Please select a category to view its spends.</p>
+                            )}
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </div>

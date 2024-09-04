@@ -20,7 +20,7 @@ export default function Login() {
             .then(response => {
                 console.log('Response:', response.data.response);
                 setError(null); 
-                if(response.data.success == true){
+                if(response.data.success === true){
                     navigation(`/myspends/`+ response.data.response.userId)
                 }
             })
