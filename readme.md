@@ -27,4 +27,8 @@ Make sure you have Node.js and npm installed. You can download them from [nodejs
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/spend-management.git
+   git clone https://github.com/atharvyadav96k/walletwatch.git
+
+2. Install dependencies 
+   ```bash
+   npm i
