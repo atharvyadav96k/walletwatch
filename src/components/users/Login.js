@@ -1,11 +1,11 @@
-import React, { useState} from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
-import '../../App.css'; 
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
     const navigation = useNavigate();
     const [error, setError] = useState(null); // State to handle errors
+    const [loading, setLoading] = useState(false); // State to manage button disabled state
 
     const LoginUser = (e) => {
         e.preventDefault();
@@ -16,23 +16,27 @@ export default function Login() {
             password: password
         };
 
+        setLoading(true); // Disable button when the request starts
+
         axios.post('https://walletwatch-server.vercel.app/api/users/login', data)
             .then(response => {
                 console.log('Response:', response.data.response);
-                setError(null); 
-                if(response.data.success === true){
-                    navigation(`/myspends/`+ response.data.response.userId)
+                setError(null); // Clear any previous errors
+                setLoading(false); // Enable the button again
+                if (response.data.success === true) {
+                    navigation(`/myspends/` + response.data.response.userId);
                 }
             })
             .catch(error => {
                 console.error('Error:', error.response ? error.response.data : error.message);
                 setError('Invalid username or password. Please try again.'); // Set error message
+                setLoading(false); // Enable the button again after error
             });
     };
 
     return (
-        <div className="d-flex justify-content-center align-items-center vh-100">
-            <div className="card shadow p-4" style={{ width: '300px' }}>
+        <div className="container d-flex justify-content-center align-items-center vh-100">
+            <div className="card shadow p-4" style={{ width: '100%', maxWidth: '400px' }}>
                 <h3 className="text-center mb-4">Login</h3>
                 <form onSubmit={LoginUser}>
                     <div className="mb-3">
@@ -44,7 +48,7 @@ export default function Login() {
                             name="username"
                             placeholder="Enter your username"
                             required
-                            autoComplete="username" // Added for better form experience
+                            autoComplete="username"
                         />
                     </div>
                     <div className="mb-3">
@@ -56,14 +60,23 @@ export default function Login() {
                             name="password"
                             placeholder="Enter your password"
                             required
-                            autoComplete="current-password" // Added for better form experience
+                            autoComplete="current-password"
                         />
                     </div>
+
+                    {/* Display error message if it exists */}
                     {error && <div className="alert alert-danger" role="alert">{error}</div>}
-                    <button type="submit" className="btn btn-primary w-100">Log In</button>
+                    
+                    <button 
+                        type="submit" 
+                        className="btn btn-primary w-100" 
+                        disabled={loading} // Disable the button if loading is true
+                    >
+                        {loading ? 'Logging in...' : 'Log In'}
+                    </button>
                 </form>
                 <div className="mt-3 text-center">
-                    <a href="#!" className="text-muted">Forgot Password?</a> {/* Changed href="#" to href="#!" to avoid potential warnings */}
+                    <a href="/register" className="text-muted">Don't have an account?</a>
                 </div>
             </div>
         </div>
